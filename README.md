@@ -88,6 +88,8 @@ visualize_attack(model, images[0].cpu(), labels[0].item(), adversarial[0].cpu(),
 
 This snippet trains the reference MNIST CNN, computes attack metrics for a mock perturbation, and opens the Hack The Box styled visualization.
 
+Note: `get_mnist_loaders` returns MNIST tensors in `[0, 1]` by default. Pass `normalize=True` to apply the canonical `(mean=0.1307, std=0.3081)` normalization, and use `mnist_denormalize` when you need to revert normalized tensors for visualization.
+
 ## Module Overview
 
 ### Core Utilities
@@ -102,8 +104,9 @@ This snippet trains the reference MNIST CNN, computes attack metrics for a mock 
 
 `htb_ai_library.data`
 
-- `get_mnist_loaders(batch_size=128, data_dir="./data")` – training/test loaders with canonical MNIST normalization.
+- `get_mnist_loaders(batch_size=128, data_dir="./data", normalize=False)` – training/test loaders that leave MNIST pixels in `[0, 1]` by default; pass `normalize=True` to enable canonical normalization.
 - `download_sms_spam_dataset(data_dir="./data")` – fetches, preprocesses, and caches the UCI SMS Spam Collection as `sms_spam.csv`.
+- `mnist_denormalize(tensor)` – invert MNIST normalization back to `[0, 1]` pixel space for visualization and metrics that expect original scales.
 - `cifar_normalize(tensor)` – apply CIFAR-10 mean/std normalization to a tensor batch.
 
 ### Reference Models

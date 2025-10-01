@@ -18,7 +18,18 @@ def get_mnist_loaders(
     normalize: bool = False,
     seed: int | None = 1337,
 ) -> tuple[DataLoader, DataLoader]:
-    """Create MNIST data loaders with optional normalization and deterministic shuffling."""
+    """Create MNIST data loaders with optional normalization and deterministic shuffling.
+
+    Args:
+        batch_size: Number of samples per batch
+        data_dir: Directory to store/load MNIST data
+        normalize: If True, applies MNIST normalization (mean=0.1307, std=0.3081)
+                   If False, returns images in [0,1] pixel space (default)
+        seed: Random seed for reproducible shuffling
+
+    Returns:
+        tuple: (train_loader, test_loader)
+    """
 
     transform_steps = [transforms.ToTensor()]
     if normalize:
@@ -84,6 +95,21 @@ def download_sms_spam_dataset(data_dir: str = './data') -> pd.DataFrame:
 
     print(f"Downloaded and prepared dataset with {len(df)} messages.")
     return df
+
+def mnist_denormalize(x: torch.Tensor) -> torch.Tensor:
+    """
+    Denormalize MNIST images from normalized space back to [0,1] pixel space.
+
+    Args:
+        x (torch.Tensor): Normalized MNIST tensor
+
+    Returns:
+        torch.Tensor: Denormalized tensor clipped to [0,1]
+    """
+    mean = 0.1307
+    std = 0.3081
+    denorm = x * std + mean
+    return torch.clamp(denorm, 0.0, 1.0)
 
 def cifar_normalize(x: torch.Tensor) -> torch.Tensor:
     """

@@ -15,6 +15,7 @@ from .core import (
 from .data import (
     get_mnist_loaders,
     download_sms_spam_dataset,
+    mnist_denormalize,
     cifar_normalize
 )
 
@@ -55,6 +56,7 @@ __all__ = [
     # data
     "get_mnist_loaders",
     "download_sms_spam_dataset",
+    "mnist_denormalize",
     "cifar_normalize",
     # models
     "SimpleCNN",
