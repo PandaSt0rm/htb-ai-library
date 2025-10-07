@@ -1,8 +1,8 @@
 """
-Backwards compatible visualization module. Use :mod:`htb_ai_library.visualization`.
+Visualization helpers for adversarial experiments.
 """
 
-from .visualization import (  # noqa: F401
+from .attacks import (
     visualize_attack,
     plot_attack_effectiveness,
     visualize_perturbation_analysis,

@@ -92,13 +92,15 @@ Note: `get_mnist_loaders` returns MNIST tensors in `[0, 1]` by default. Pass `no
 
 ## Module Overview
 
+The library now ships as a set of focused subpackages. Import from `htb_ai_library.utils`, `htb_ai_library.data`, `htb_ai_library.models`, `htb_ai_library.training`, `htb_ai_library.evaluation`, or `htb_ai_library.visualization` for direct access, while legacy modules such as `htb_ai_library.core` and `htb_ai_library.viz` continue to proxy to the new layout for backwards compatibility.
+
 ### Core Utilities
 
-`htb_ai_library.core`
+`htb_ai_library.utils`
 
-- `set_reproducibility(seed=1337)` – align RNGs across `random`, NumPy, and PyTorch (CPU + CUDA).
-- `save_model(model, filepath)` / `load_model(model, filepath, device)` – persistence helpers tolerant of bare filenames.
-- HTB color constants (`HTB_GREEN`, `NODE_BLACK`, `MALWARE_RED`, etc.) for branding plots and dashboards, plus `get_color("htb_green")` and `get_color_palette()` for read-only access to the palette without importing individual names.
+- `set_reproducibility(seed=1337)` – align RNGs across `random`, NumPy, and PyTorch (CPU + CUDA); still available via `htb_ai_library.core` for legacy imports.
+- `save_model(model, filepath)` / `load_model(model, filepath, device)` – persistence helpers with version metadata safeguards.
+- HTB color constants (`HTB_GREEN`, `NODE_BLACK`, `MALWARE_RED`, etc.) plus `get_color("htb_green")` and `get_color_palette()` for read-only palette access.
 
 ### Data Utilities
 
@@ -125,9 +127,9 @@ Note: `get_mnist_loaders` returns MNIST tensors in `[0, 1]` by default. Pass `no
 - `train_model` – multi-epoch trainer with Adam optimizer and validation accuracy logging.
 - `evaluate_accuracy` – dataset accuracy calculation with safe handling of empty loaders.
 
-### Metrics
+### Evaluation Metrics
 
-`htb_ai_library.metrics`
+`htb_ai_library.evaluation`
 
 - `evaluate_attack_effectiveness` – returns clean/adversarial accuracy, attack success rate (safe against divide-by-zero), confidence deltas, and perturbation norms.
 - `analyze_model_confidence` – batched confidence statistics for a configurable number of samples.
@@ -135,7 +137,7 @@ Note: `get_mnist_loaders` returns MNIST tensors in `[0, 1]` by default. Pass `no
 
 ### Visualization
 
-`htb_ai_library.viz`
+`htb_ai_library.visualization`
 
 - `visualize_attack` – side-by-side clean/adversarial comparison, perturbation heatmap, and probability histograms.
 - `plot_attack_effectiveness` – effort vs. evasion-rate plot for tabular attack results.

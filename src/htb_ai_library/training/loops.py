@@ -2,14 +2,26 @@
 Standardized model training and evaluation loops.
 """
 
+from __future__ import annotations
+
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-def train_one_epoch(model: nn.Module, loader: DataLoader, optimizer: torch.optim.Optimizer, device: torch.device) -> float:
+__all__ = ["train_one_epoch", "train_model", "evaluate_accuracy"]
+
+
+def train_one_epoch(
+    model: nn.Module,
+    loader: DataLoader,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+) -> float:
     """
-    Train model for one epoch and return average loss.
+    Train a model for a single epoch and return the average loss.
     """
     model.train()
     total_loss = 0.0
@@ -27,13 +39,22 @@ def train_one_epoch(model: nn.Module, loader: DataLoader, optimizer: torch.optim
 
     return total_loss / max(count, 1)
 
-def train_model(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader, device: str, epochs: int = 5, learning_rate: float = 0.001):
+
+def train_model(
+    model: nn.Module,
+    train_loader: DataLoader,
+    test_loader: DataLoader,
+    *,
+    device: str | torch.device,
+    epochs: int = 5,
+    learning_rate: float = 0.001,
+) -> nn.Module:
     """
-    Train a model for multiple epochs.
+    Train a model for multiple epochs with periodic evaluation.
     """
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    
+
     for epoch in range(1, epochs + 1):
         avg_loss = train_one_epoch(model, train_loader, optimizer, device)
         accuracy = evaluate_accuracy(model, test_loader, device)
@@ -41,7 +62,8 @@ def train_model(model: nn.Module, train_loader: DataLoader, test_loader: DataLoa
 
     return model
 
-def evaluate_accuracy(model: nn.Module, loader: DataLoader, device: torch.device) -> float:
+
+def evaluate_accuracy(model: nn.Module, loader: DataLoader, device: torch.device | str) -> float:
     """
     Compute classification accuracy on a dataset.
     """

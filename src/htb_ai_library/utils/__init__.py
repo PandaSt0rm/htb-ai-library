@@ -1,12 +1,9 @@
 """
-Legacy core module aggregating utility helpers for backwards compatibility.
-
-The library now organizes functionality into dedicated subpackages under
-``htb_ai_library.utils``. This module preserves historical import paths by
-re-exporting the new implementations.
+Utility subpackage with reproducibility, palette, and serialization helpers.
 """
 
-from .utils.palette import (  # noqa: F401
+from .reproducibility import set_reproducibility
+from .palette import (
     HTB_GREEN,
     NODE_BLACK,
     HACKER_GREY,
@@ -20,8 +17,7 @@ from .utils.palette import (  # noqa: F401
     get_color,
     get_color_palette,
 )
-from .utils.reproducibility import set_reproducibility  # noqa: F401
-from .utils.serialization import load_model, save_model  # noqa: F401
+from .serialization import save_model, load_model
 
 __all__ = [
     "set_reproducibility",

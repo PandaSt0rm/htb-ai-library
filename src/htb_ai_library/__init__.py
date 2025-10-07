@@ -12,7 +12,7 @@ from .core import (
     HTB_PALETTE, get_color, get_color_palette
 )
 
-# data.py
+# data subpackage
 from .data import (
     get_mnist_loaders,
     download_sms_spam_dataset,
@@ -20,28 +20,29 @@ from .data import (
     cifar_normalize
 )
 
-# models.py
+# models subpackage
 from .models import (
     SimpleCNN,
     MNISTClassifierWithDropout,
     ResNetCIFAR
 )
 
-# training.py
+# training subpackage
 from .training import (
+    train_one_epoch,
     train_model,
     evaluate_accuracy
 )
 
-# metrics.py
-from .metrics import (
+# evaluation subpackage
+from .evaluation import (
     evaluate_attack_effectiveness,
     analyze_model_confidence,
     print_attack_summary
 )
 
-# viz.py
-from .viz import (
+# visualization subpackage
+from .visualization import (
     visualize_attack,
     plot_attack_effectiveness,
     visualize_perturbation_analysis
@@ -65,6 +66,7 @@ __all__ = [
     "MNISTClassifierWithDropout",
     "ResNetCIFAR",
     # training
+    "train_one_epoch",
     "train_model",
     "evaluate_accuracy",
     # metrics
