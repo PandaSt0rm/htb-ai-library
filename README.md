@@ -98,7 +98,7 @@ Note: `get_mnist_loaders` returns MNIST tensors in `[0, 1]` by default. Pass `no
 
 - `set_reproducibility(seed=1337)` – align RNGs across `random`, NumPy, and PyTorch (CPU + CUDA).
 - `save_model(model, filepath)` / `load_model(model, filepath, device)` – persistence helpers tolerant of bare filenames.
-- HTB color constants (`HTB_GREEN`, `NODE_BLACK`, `MALWARE_RED`, etc.) for branding plots and dashboards.
+- HTB color constants (`HTB_GREEN`, `NODE_BLACK`, `MALWARE_RED`, etc.) for branding plots and dashboards, plus `get_color("htb_green")` and `get_color_palette()` for read-only access to the palette without importing individual names.
 
 ### Data Utilities
 

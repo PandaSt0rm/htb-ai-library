@@ -8,7 +8,8 @@ from .core import (
     save_model,
     load_model,
     HTB_GREEN, NODE_BLACK, HACKER_GREY, WHITE, 
-    AZURE, NUGGET_YELLOW, MALWARE_RED, VIVID_PURPLE, AQUAMARINE
+    AZURE, NUGGET_YELLOW, MALWARE_RED, VIVID_PURPLE, AQUAMARINE,
+    HTB_PALETTE, get_color, get_color_palette
 )
 
 # data.py
@@ -53,6 +54,7 @@ __all__ = [
     "load_model",
     "HTB_GREEN", "NODE_BLACK", "HACKER_GREY", "WHITE", "AZURE", 
     "NUGGET_YELLOW", "MALWARE_RED", "VIVID_PURPLE", "AQUAMARINE",
+    "HTB_PALETTE", "get_color", "get_color_palette",
     # data
     "get_mnist_loaders",
     "download_sms_spam_dataset",
