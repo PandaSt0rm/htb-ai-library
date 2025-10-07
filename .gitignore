@@ -126,4 +126,5 @@ test_*
 tests/test_attack_scripts.py
 
 # Downloaded datasets
-data/
+# Anchor to repo root so we don't ignore package submodules named "data"
+/data/
