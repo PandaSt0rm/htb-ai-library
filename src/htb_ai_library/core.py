@@ -16,18 +16,73 @@ import torch.nn as nn
 
 # --- Reproducibility ---
 
+
 def set_reproducibility(seed: int = 1337) -> None:
     """
-    Configure reproducible behavior across libraries.
+    Configure reproducible behavior across Python, NumPy, and PyTorch.
+
+    Parameters
+    ----------
+    seed : int, optional
+        Non-negative integer applied to all managed random number generators.
+        Defaults to 1337.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        If ``seed`` is negative.
+
+    Examples
+    --------
+    >>> set_reproducibility(1234)
     """
+    if seed < 0:
+        raise ValueError("seed must be non-negative")
+
     os.environ["PYTHONHASHSEED"] = str(seed)
+
+    # Align Python and NumPy RNGs.
     random.seed(seed)
     np.random.seed(seed)
+
+    # Align Torch RNGs (CPU and, when available, CUDA).
     torch.manual_seed(seed)
-    if torch.cuda.is_available():
+
+    cuda_available = torch.cuda.is_available()
+    if cuda_available:
+        # Keep existing user preference for workspace size if provided.
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":16:8")
+
+        torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
+
+        # Disable algorithm heuristics that trade determinism for performance.
+        if hasattr(torch.backends.cuda, "matmul") and hasattr(
+            torch.backends.cuda.matmul, "allow_tf32"
+        ):
+            torch.backends.cuda.matmul.allow_tf32 = False
+        if hasattr(torch.backends.cudnn, "allow_tf32"):
+            torch.backends.cudnn.allow_tf32 = False
+
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+
+    use_det_alg = getattr(torch, "use_deterministic_algorithms", None)
+    if callable(use_det_alg):
+        try:
+            use_det_alg(True, warn_only=True)
+        except TypeError:
+            use_det_alg(True)
+        except RuntimeError as err:
+            warnings.warn(
+                f"Deterministic algorithms requested but unavailable: {err}",
+                RuntimeWarning,
+            )
+
 
 # --- HTB Color Palette ---
 
@@ -42,6 +97,7 @@ VIVID_PURPLE = "#9f00ff"
 AQUAMARINE = "#2ee7b6"
 
 # --- Model Persistence ---
+
 
 def save_model(model: Any, filepath: str) -> None:
     """
@@ -60,14 +116,15 @@ def save_model(model: Any, filepath: str) -> None:
     else:
         # Wrap the model with version metadata for better compatibility checking
         metadata = {
-            'model': model,
-            'python_version': f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
-            'torch_version': torch.__version__,
-            'numpy_version': np.__version__,
+            "model": model,
+            "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+            "torch_version": torch.__version__,
+            "numpy_version": np.__version__,
         }
         with open(filepath, "wb") as handle:
             pickle.dump(metadata, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print(f"Model saved to {filepath}")
+
 
 def load_model(
     model_or_filepath: Union[nn.Module, str],
@@ -95,9 +152,13 @@ def load_model(
     # Handle PyTorch module loading
     if isinstance(model_or_filepath, nn.Module):
         if filepath is None:
-            raise ValueError("filepath must be provided when loading into a PyTorch module")
+            raise ValueError(
+                "filepath must be provided when loading into a PyTorch module"
+            )
         if device is None:
-            raise ValueError("device must be provided when loading into a PyTorch module")
+            raise ValueError(
+                "device must be provided when loading into a PyTorch module"
+            )
 
         try:
             state_dict = torch.load(filepath, map_location=device, weights_only=False)
@@ -129,10 +190,10 @@ def load_model(
             obj = pickle.load(handle)
 
         # Check if this is our new metadata format
-        if isinstance(obj, dict) and 'model' in obj:
+        if isinstance(obj, dict) and "model" in obj:
             # Check version compatibility
-            saved_python = obj.get('python_version', 'unknown')
-            saved_torch = obj.get('torch_version', 'unknown')
+            saved_python = obj.get("python_version", "unknown")
+            saved_torch = obj.get("torch_version", "unknown")
             current_python = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
             current_torch = torch.__version__
 
@@ -141,27 +202,27 @@ def load_model(
                 warnings.warn(
                     f"Python version mismatch: model saved with {saved_python}, "
                     f"loading with {current_python}. This may cause compatibility issues.",
-                    RuntimeWarning
+                    RuntimeWarning,
                 )
 
             if saved_torch != current_torch:
                 warnings.warn(
                     f"PyTorch version mismatch: model saved with {saved_torch}, "
                     f"loading with {current_torch}. This may cause compatibility issues.",
-                    RuntimeWarning
+                    RuntimeWarning,
                 )
 
             print(f"Model loaded from {model_or_filepath}")
-            return obj['model']
+            return obj["model"]
         else:
             # Old format or plain object
             print(f"Model loaded from {model_or_filepath}")
             return obj
 
     except pickle.UnpicklingError as e:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"PICKLE DESERIALIZATION ERROR")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Failed to load model from: {model_or_filepath}")
         print(f"Error: {str(e)}")
         print(f"\nPossible causes:")
@@ -169,34 +230,36 @@ def load_model(
         print(f"  2. File is corrupted or incomplete")
         print(f"  3. File format has changed between library versions")
         print(f"\nCurrent environment:")
-        print(f"  Python: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+        print(
+            f"  Python: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        )
         print(f"  PyTorch: {torch.__version__}")
         print(f"\nRECOMMENDED ACTION:")
         print(f"  Delete the incompatible file and retrain the model:")
         print(f"  rm {model_or_filepath}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
         return None
 
     except (EOFError, ValueError, ImportError, ModuleNotFoundError) as e:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"MODEL LOADING ERROR")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Failed to load model from: {model_or_filepath}")
         print(f"Error type: {type(e).__name__}")
         print(f"Error: {str(e)}")
         print(f"\nRECOMMENDED ACTION:")
         print(f"  Delete the corrupted file and retrain the model:")
         print(f"  rm {model_or_filepath}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
         return None
 
     except Exception as e:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"UNEXPECTED ERROR LOADING MODEL")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Failed to load model from: {model_or_filepath}")
         print(f"Error type: {type(e).__name__}")
         print(f"Error: {str(e)}")
         print(f"\nPlease report this issue with the full error message.")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
         return None
