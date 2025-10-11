@@ -13,7 +13,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .styles import (
-    apply_htb_axes_style,
     HTB_GREEN,
     NODE_BLACK,
     HACKER_GREY,
@@ -57,27 +56,23 @@ def visualize_attack(
     gs = plt.GridSpec(2, 3, hspace=0.4, wspace=0.3)
 
     ax1 = fig.add_subplot(gs[0, 0])
-    apply_htb_axes_style(ax1)
     ax1.imshow(image.cpu().permute(1, 2, 0).clamp(0, 1))
     ax1.set_title(f"Original: {clean_pred}", color=HTB_GREEN, fontweight="bold")
     ax1.axis("off")
 
     ax2 = fig.add_subplot(gs[0, 1])
-    apply_htb_axes_style(ax2)
     ax2.imshow(adv_image.cpu().permute(1, 2, 0).clamp(0, 1))
     title_color = MALWARE_RED if adv_pred != true_label else HTB_GREEN
     ax2.set_title(f"Adversarial: {adv_pred}", color=title_color, fontweight="bold")
     ax2.axis("off")
 
     ax3 = fig.add_subplot(gs[0, 2])
-    apply_htb_axes_style(ax3)
     pert_vis = (perturbation - perturbation.min()) / (perturbation.max() - perturbation.min() + 1e-8)
     ax3.imshow(pert_vis.permute(1, 2, 0))
     ax3.set_title("Perturbation", color=NUGGET_YELLOW, fontweight="bold")
     ax3.axis("off")
 
     ax4 = fig.add_subplot(gs[1, :])
-    apply_htb_axes_style(ax4)
     x = np.arange(num_classes)
     width = 0.4
     ax4.bar(x - width / 2, clean_probs.cpu().numpy()[:num_classes], width, color=AZURE, label="Clean")
@@ -97,7 +92,6 @@ def plot_attack_effectiveness(attack_results) -> None:
     Plot attack effectiveness versus effort for a tabular results object.
     """
     fig, ax = plt.subplots(figsize=(12, 6), facecolor=NODE_BLACK)
-    apply_htb_axes_style(ax)
     ax.plot(attack_results["num_words"], attack_results["evasion_rate"], marker="o", color=AZURE)
     ax.fill_between(attack_results["num_words"], 0, attack_results["evasion_rate"], alpha=0.2, color=AZURE)
     ax.set_xlabel("Effort (e.g., Words Added, Epsilon)", fontsize=12, color=HTB_GREEN)
@@ -120,18 +114,14 @@ def visualize_perturbation_analysis(results) -> None:
     l2_norms = [r["l2_norm"] for r in results]
     iterations = [r["iterations"] for r in results]
 
-    apply_htb_axes_style(axes[0])
     axes[0].hist(l2_norms, bins=15, color=HTB_GREEN, alpha=0.7)
     axes[0].set_title("L2 Norm Distribution", color=HTB_GREEN)
     axes[0].set_xlabel("L2 Norm", color=WHITE)
     axes[0].set_ylabel("Frequency", color=WHITE)
 
-    apply_htb_axes_style(axes[1])
     axes[1].hist(iterations, bins=range(1, max(iterations) + 2), color=AZURE, alpha=0.7)
     axes[1].set_title("Iterations Required", color=HTB_GREEN)
     axes[1].set_xlabel("Iterations", color=WHITE)
-
-    apply_htb_axes_style(axes[2])
 
     def _to_numpy(tensor_like):
         if isinstance(tensor_like, torch.Tensor):

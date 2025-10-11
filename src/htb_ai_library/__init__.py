@@ -46,8 +46,7 @@ from .visualization import (
     visualize_attack,
     plot_attack_effectiveness,
     visualize_perturbation_analysis,
-    style_htb_axis,
-    apply_htb_axes_style,
+    use_htb_style,
 )
 
 __all__ = [
@@ -79,6 +78,5 @@ __all__ = [
     "visualize_attack",
     "plot_attack_effectiveness",
     "visualize_perturbation_analysis",
-    "style_htb_axis",
-    "apply_htb_axes_style",
+    "use_htb_style",
 ]
