@@ -84,3 +84,26 @@ def test_visualize_perturbation_analysis_rejects_empty(monkeypatch):
 
     with pytest.raises(ValueError):
         visualize_perturbation_analysis([])
+
+
+def test_use_htb_style_applies_theme():
+    from htb_ai_library.visualization import use_htb_style
+
+    # Apply HTB style
+    use_htb_style()
+
+    # Check that key rcParams were updated with HTB colors
+    assert plt.rcParams['figure.facecolor'] == "#141d2b"  # NODE_BLACK
+    assert plt.rcParams['axes.facecolor'] == "#141d2b"  # NODE_BLACK
+    assert plt.rcParams['axes.titlecolor'] == "#9fef00"  # HTB_GREEN
+    assert plt.rcParams['axes.labelcolor'] == "#ffffff"  # WHITE
+    assert plt.rcParams['grid.color'] == "#a4b1cd"  # HACKER_GREY
+
+
+def test_use_htb_style_enables_grid():
+    from htb_ai_library.visualization import use_htb_style
+
+    use_htb_style()
+
+    # Verify grid is enabled by default
+    assert plt.rcParams['axes.grid'] is True

@@ -62,3 +62,42 @@ def test_save_and_load_generic_object(tmp_path, monkeypatch):
     loaded = load_model("model.pkl")
 
     assert loaded == payload
+
+
+def test_get_color_returns_valid_hex():
+    from htb_ai_library.utils import get_color
+
+    color = get_color("HTB_GREEN")
+    assert color == "#9fef00"
+    assert color.startswith("#")
+
+
+def test_get_color_case_insensitive():
+    from htb_ai_library.utils import get_color
+
+    assert get_color("htb_green") == get_color("HTB_GREEN")
+    assert get_color("HtB_gReEn") == get_color("HTB_GREEN")
+
+
+def test_get_color_raises_on_invalid_name():
+    from htb_ai_library.utils import get_color
+
+    with pytest.raises(KeyError, match="Unknown color"):
+        get_color("INVALID_COLOR")
+
+
+def test_get_color_palette_returns_mapping():
+    from htb_ai_library.utils import get_color_palette
+
+    palette = get_color_palette()
+    assert "HTB_GREEN" in palette
+    assert "NODE_BLACK" in palette
+    assert palette["HTB_GREEN"] == "#9fef00"
+
+
+def test_get_color_palette_is_read_only():
+    from htb_ai_library.utils import get_color_palette
+
+    palette = get_color_palette()
+    with pytest.raises(TypeError):
+        palette["NEW_COLOR"] = "#000000"

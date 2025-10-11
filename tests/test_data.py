@@ -26,8 +26,9 @@ class DummyMNISTDataset(torch.utils.data.Dataset):
 
 
 def test_get_mnist_loaders_uses_configured_batch(monkeypatch):
-    monkeypatch.setattr(data_module.transforms, "Compose", lambda steps: lambda x: x)
-    monkeypatch.setattr(data_module.datasets, "MNIST", DummyMNISTDataset)
+    from torchvision import transforms, datasets
+    monkeypatch.setattr(transforms, "Compose", lambda steps: lambda x: x)
+    monkeypatch.setattr(datasets, "MNIST", DummyMNISTDataset)
 
     train_loader, test_loader = data_module.get_mnist_loaders(batch_size=2, data_dir="ignored")
 
@@ -55,9 +56,10 @@ def _build_sms_zip():
 
 
 def test_download_sms_spam_dataset_creates_csv(tmp_path, monkeypatch):
+    import urllib.request
     monkeypatch.chdir(tmp_path)
     zipped_bytes = _build_sms_zip()
-    monkeypatch.setattr(data_module.urllib.request, "urlretrieve", _fake_urlretrieve_factory(zipped_bytes))
+    monkeypatch.setattr(urllib.request, "urlretrieve", _fake_urlretrieve_factory(zipped_bytes))
 
     df = data_module.download_sms_spam_dataset(data_dir=".")
 
@@ -70,6 +72,7 @@ def test_download_sms_spam_dataset_creates_csv(tmp_path, monkeypatch):
 
 
 def test_download_sms_spam_dataset_uses_cache(tmp_path, monkeypatch):
+    import urllib.request
     monkeypatch.chdir(tmp_path)
     csv_path = tmp_path / "sms_spam.csv"
     pd.DataFrame({"label": ["ham"], "message": ["hello"]}).to_csv(csv_path, index=False)
@@ -80,7 +83,7 @@ def test_download_sms_spam_dataset_uses_cache(tmp_path, monkeypatch):
         calls.append(url)
         raise AssertionError("Should not be called when cache exists")
 
-    monkeypatch.setattr(data_module.urllib.request, "urlretrieve", _tracking_urlretrieve)
+    monkeypatch.setattr(urllib.request, "urlretrieve", _tracking_urlretrieve)
 
     df = data_module.download_sms_spam_dataset(data_dir=".")
 
@@ -97,3 +100,28 @@ def test_cifar_normalize_applies_stats():
     expected = ((torch.ones(3) - mean) / std).view(1, 3, 1, 1)
 
     assert torch.allclose(normalized, expected)
+
+
+def test_mnist_denormalize_inverts_normalization():
+    # Test denormalization with typical normalized values
+    normalized = torch.tensor([[[[-1.0, 0.0, 1.0], [2.0, -2.0, 0.5]]]])
+    denormalized = data_module.mnist_denormalize(normalized)
+
+    # Check that values are in [0, 1] range
+    assert denormalized.min() >= 0.0
+    assert denormalized.max() <= 1.0
+
+    # Test specific values
+    mean, std = 0.1307, 0.3081
+    expected = torch.clamp(normalized * std + mean, 0.0, 1.0)
+    assert torch.allclose(denormalized, expected)
+
+
+def test_mnist_denormalize_handles_extreme_values():
+    # Test clamping behavior with extreme values
+    extreme = torch.tensor([[[[10.0, -10.0]]]])
+    denormalized = data_module.mnist_denormalize(extreme)
+
+    # Should be clamped to [0, 1]
+    assert denormalized.min() >= 0.0
+    assert denormalized.max() <= 1.0
