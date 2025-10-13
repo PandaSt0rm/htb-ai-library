@@ -38,6 +38,30 @@ def test_get_mnist_loaders_uses_configured_batch(monkeypatch):
     assert len(test_loader.dataset) == 4
 
 
+def test_get_mnist_loaders_with_normalization(monkeypatch):
+    from torchvision import transforms, datasets
+
+    compose_calls = []
+    original_compose = transforms.Compose
+
+    def tracking_compose(steps):
+        compose_calls.append(steps)
+        return lambda x: x
+
+    monkeypatch.setattr(transforms, "Compose", tracking_compose)
+    monkeypatch.setattr(datasets, "MNIST", DummyMNISTDataset)
+
+    train_loader, test_loader = data_module.get_mnist_loaders(
+        batch_size=2, data_dir="ignored", normalize=True
+    )
+
+    assert len(compose_calls) > 0
+    # Verify that normalization was added to transform steps
+    assert len(compose_calls[0]) == 2  # ToTensor + Normalize
+    assert isinstance(train_loader, DataLoader)
+    assert isinstance(test_loader, DataLoader)
+
+
 def _fake_urlretrieve_factory(contents: bytes):
     def _fake_urlretrieve(url, filename):
         with open(filename, "wb") as fh:
