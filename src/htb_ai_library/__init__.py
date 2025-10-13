@@ -22,10 +22,12 @@ from .data import (
 
 # models subpackage
 from .models import (
+    SimpleLeNet,
     SimpleCNN,
     MNISTClassifierWithDropout,
-    ResNetCIFAR
+    ResNetCIFAR,
 )
+
 
 # training subpackage
 from .training import (
@@ -63,6 +65,7 @@ __all__ = [
     "mnist_denormalize",
     "cifar_normalize",
     # models
+    "SimpleLeNet",
     "SimpleCNN",
     "MNISTClassifierWithDropout",
     "ResNetCIFAR",

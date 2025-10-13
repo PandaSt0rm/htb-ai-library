@@ -65,7 +65,7 @@ import torch
 
 from htb_ai_library.utils import set_reproducibility
 from htb_ai_library.data import get_mnist_loaders
-from htb_ai_library.models import SimpleCNN
+from htb_ai_library.models import SimpleLeNet, SimpleCNN
 from htb_ai_library.training import train_model
 from htb_ai_library.evaluation import evaluate_attack_effectiveness
 from htb_ai_library.visualization import use_htb_style, visualize_attack
@@ -79,7 +79,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Data + model
 train_loader, test_loader = get_mnist_loaders(batch_size=128, data_dir="./data")
-model = SimpleCNN().to(device)
+model = SimpleCNN().to(device)  # or SimpleLeNet() for a LeNet-style alternative
 
 # Train for a couple of epochs
 train_model(model, train_loader, test_loader, device=device, epochs=2)
@@ -118,7 +118,7 @@ Legacy modules like `htb_ai_library.core`, `htb_ai_library.metrics`, and `htb_ai
 `htb_ai_library.utils`
 
 - `set_reproducibility(seed=1337)` – align RNGs across `random`, NumPy, and PyTorch (CPU + CUDA). Also available via `htb_ai_library.core`.
-- `save_model(model, filepath)` / `load_model(model_or_filepath, filepath=None, device=None)` – persistence helpers with version metadata safeguards and friendly error messages.
+- `save_model(model, filepath)` / `load_model(model_or_filepath, filepath=None, device=None)` – persistence helpers with version metadata safeguards and friendly error messages; compatible with all bundled architectures such as `SimpleLeNet`.
 - HTB color constants (`HTB_GREEN`, `NODE_BLACK`, `MALWARE_RED`, `VIVID_PURPLE`, `AQUAMARINE`, etc.) plus `get_color(name)` and `get_color_palette()`.
 
 ### Data Utilities
@@ -134,6 +134,7 @@ Legacy modules like `htb_ai_library.core`, `htb_ai_library.metrics`, and `htb_ai
 
 `htb_ai_library.models`
 
+- `SimpleLeNet` – LeNet-style classifier with optional `forward_log_probs` for log-softmax outputs.
 - `SimpleCNN` – fast MNIST‑ready CNN for demonstrations.
 - `MNISTClassifierWithDropout` – dropout‑regularized MNIST classifier.
 - `ResNetCIFAR` – lightweight ResNet‑18 style network for CIFAR‑10.
